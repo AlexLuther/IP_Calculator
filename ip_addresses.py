@@ -1,28 +1,43 @@
 import ipaddress
 import binpacking
-from tkinter import *
+import tkinter as tk
 
 #input -  then split into a list
 #TODO 20.0.0.6/22
 # ip_numbers = "10.0.0.0/21 20.0.0.0/20"
 
-root = Tk()
+root = tk.Tk()
+root.title("IP Calculator")
 
-e = Entry(root, width=50)
+label1 = tk.Label(root, text="Input assets to INCLUDE separated by space/s:")
+label1.config(font=('helvetica', 14))
+label1.pack()
+
+e = tk.Entry(root, width=100)
 e.pack()
-e.insert(0, "Input Assets to INCLUDE separated by space/s" )
-e1 = Entry(root, width=50)
+
+label1 = tk.Label(root, text="Input assets to EXCLUDE separated by space/s:")
+label1.config(font=('helvetica', 14))
+label1.pack()
+
+e1 = tk.Entry(root, width=100)
 e1.pack()
-e1.insert(0, "Input Assets to EXCLUDE separated by space/s" )
+
+ip_numbers = []
+exclude = []
 
 def submit():
+    global ip_numbers
+    global exclude
+    ip_numbers = e.get()
+    exclude = e1.get()
+    print(ip_numbers)
+    root.destroy()
 
-    ip_numbers = e.insert()
-    exclude = e1.insert()
 
 
 
-myButton = Button(root, text="Submit", command = submit)
+myButton = tk.Button(root, text="Submit", command = submit)
 myButton.pack()
 
 root.mainloop()
@@ -112,6 +127,8 @@ resourcesPerGroups = [list(group.keys()) for group in groups]
 # Numerate part starting from 1
 b = 1
 
+file1 = open("ips.txt", "w")
+
 for i in resourcesPerGroups:
     excluded_ips = []
 
@@ -120,6 +137,10 @@ for i in resourcesPerGroups:
     ips_ex = ips_ex.split(", ")
 
     print("Part", b, ', '.join(i))
+    L = "Part", b, ', '.join(i)
+    L = str(L) + '\n'
+    file1.writelines(L)
+
 
     for z in ips_ex:
 
@@ -128,6 +149,9 @@ for i in resourcesPerGroups:
                 excluded_ips.append(zz)
     if excluded_ips:
         print("Exlude IP/s: ", ', '.join(excluded_ips))
+        L = "Exlude IP/s: ", ', '.join(excluded_ips)
+        L = str(L) + '\n' + '\n'
+        file1.writelines(L)
 
 
     print('') # new line between parts
