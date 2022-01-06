@@ -2,26 +2,23 @@ import ipaddress
 import binpacking
 import tkinter as tk
 
-#input -  then split into a list
-#TODO 20.0.0.6/22
-# ip_numbers = "10.0.0.0/21 20.0.0.0/20"
-
 root = tk.Tk()
+root.geometry("405x175")
 root.title("IP Calculator")
 
 label1 = tk.Label(root, text="Input assets to INCLUDE separated by space/s:")
 label1.config(font=('helvetica', 14))
-label1.pack()
+label1.place(height=40, width=400, x=0, y=0)
 
 e = tk.Entry(root, width=100)
-e.pack()
+e.place(height=20, width=400, x=0, y=41)
 
 label1 = tk.Label(root, text="Input assets to EXCLUDE separated by space/s:")
 label1.config(font=('helvetica', 14))
-label1.pack()
+label1.place(height=40, width=400, x=0, y=62)
 
 e1 = tk.Entry(root, width=100)
-e1.pack()
+e1.place(height=20, width=400, x=0, y=105)
 
 ip_numbers = []
 exclude = []
@@ -31,31 +28,31 @@ def submit():
     global exclude
     ip_numbers = e.get()
     exclude = e1.get()
-    print(ip_numbers)
     root.destroy()
 
-
-
-
 myButton = tk.Button(root, text="Submit", command = submit)
-myButton.pack()
+myButton.place(height=30, width=70, x=170, y=130)
 
-root.mainloop()
+try:
+    root.mainloop()
+except Exception:
+    print("Canceled")
 
-# ip_numbers = input("Input Assets to Include separated by space/s:")
+file1 = open("ips.txt", "w")
 
 try:
     ip_numbers = ip_numbers.split()
-except ValueError:
-        print("You didn't use SPACE/s to separate the addresses, please try again")
-
-
-# exclude = input("Input Assets to exclude separated by space/s:")
+except Exception:
+        file1.writelines("You didn't use SPACE/s to separate the addresses, please try again")
+        file1.close()
+        exit()
 
 try:
     exclude = exclude.split()
-except ValueError:
-        print("You didn't use SPACE/s to separate the addresses, please try again")
+except Exception:
+        file1.writelines("You didn't use SPACE/s to separate the addresses, please try again")
+        file1.close()
+        exit()
 
 #converted IP addresses
 ip_converted = []
@@ -72,13 +69,26 @@ j = 0
 # Loop excluded addresses to place them in IP format
 for i in exclude:
     i = ipaddress.ip_interface(i)
-    ex_ip_converted.append(str(i))
+
+    # print(str(i))
+    # Helps not put
+    if "/32" in str(i):
+
+        ex_ip_converted.append(str(i).replace("/32", ""))
+    else:
+        ex_ip_converted.append(str(i))
+    # ex_ip_converted.append(str(i))
 
 #loop over each item in input
 for i in ip_numbers:
 
     #convert element into IP
-    i = ipaddress.IPv4Network(i)
+    try:
+        i = ipaddress.ip_network(i, False)
+    except ValueError:
+        file1.writelines("Incorrect values inputted")
+        file1.close()
+        exit()
 
     #get IP prefix and add to list
     prefix_length.append(i.num_addresses)
@@ -101,12 +111,7 @@ for i in ip_numbers:
             j += 1
 
     else:
-
-        # Helps not put
-        if "/32" in str(i):
-            ip_converted.append(str(i).replace("/32", ""))
-        else:
-            ip_converted.append(str(i))
+        ip_converted.append(str(i))
 
     j += 1
 
@@ -117,28 +122,26 @@ for i in prefix_length:
 
     num += 1
 
-
 groups = binpacking.to_constant_volume(ip_set, 4096)
-
-
 
 resourcesPerGroups = [list(group.keys()) for group in groups]
 
 # Numerate part starting from 1
 b = 1
 
-file1 = open("ips.txt", "w")
-
 for i in resourcesPerGroups:
     excluded_ips = []
-
     ips_ex = ', '.join(i)
-
     ips_ex = ips_ex.split(", ")
 
-    print("Part", b, ', '.join(i))
-    L = "Part", b, ', '.join(i)
-    L = str(L) + '\n'
+    if i:
+        L = "Part " + str(b) + ": " + ', '.join(i) + "\n"
+    else:
+        file1.writelines("No Input")
+        file1.close()
+        exit()
+
+
     file1.writelines(L)
 
 
@@ -148,16 +151,9 @@ for i in resourcesPerGroups:
             if ipaddress.ip_interface(zz) in ipaddress.IPv4Network(z):
                 excluded_ips.append(zz)
     if excluded_ips:
-        print("Exlude IP/s: ", ', '.join(excluded_ips))
-        L = "Exlude IP/s: ", ', '.join(excluded_ips)
-        L = str(L) + '\n' + '\n'
+        L = "Exclude IP/s: " + ', ' .join(excluded_ips) + '\n' + '\n'
         file1.writelines(L)
 
-
-    print('') # new line between parts
-
-
-
     b += 1
-
+file1.close()
 
