@@ -15,7 +15,7 @@ Excluded parts will be under the part to include e.g.
 
       Part 1: 10.0.0.0/20
       Part 2: 10.0.16.0/20
-      esdcdcddfdvcsdvsdczxdvcsdddsdfjdkfdsdsfsdvcdssdfscfdsaccddcfdcdcExclude IP/s: IP/s: 10.0.25.0/28
+      Exclude IP/s: IP/s: 10.0.25.0/28
 
 Part 3: 10.0.32.0/20
 
