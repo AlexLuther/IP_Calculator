@@ -164,10 +164,7 @@ for i in resourcesPerGroups:
     # Loops over all included IPs to check if they match excluded IPs
     for z in ips_ex:
         for zz in ex_ip_converted:
-            if ipaddress.ip_interface(z) == ipaddress.ip_interface(zz):  # If IP is equal exclude it
-                L = ""
-                b -= 1
-            elif ipaddress.ip_interface(zz) in ipaddress.IPv4Network(z):
+            if ipaddress.ip_interface(zz) in ipaddress.IPv4Network(z):
                 excluded_ips.append(zz)
 
     file1.writelines(L)  # Write to file Part # and assets in it
