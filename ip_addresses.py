@@ -85,10 +85,13 @@ for i in exclude:
         root.mainloop()
         exit()
 
+
     if "/32" in str(i):  # Replaces "/32" with blank
         ex_ip_converted.append(str(i).replace("/32", ""))
     else:  # Adds IPs to excluded list
         ex_ip_converted.append(str(i))
+
+ex_ip_converted = list((set(ex_ip_converted)))
 
 # Loop over each item in input
 for i in ip_numbers:
@@ -132,47 +135,74 @@ for i in ip_numbers:
     else:
         ip_converted.append(str(i))
 
-
     j += 1
 
-ip_set = {}  # Dictionary for binpacking
+# Checks if Included IP is subnet of another IP it removes the small of the two
+new_ip_converted = ip_converted.copy()
 num = 0
-# Creating the dictionary
-for i in prefix_length:
-    ip_set[ip_converted[num]] = int(i)
+
+for i in new_ip_converted:
+    for j in new_ip_converted:
+        try:  # If the last IP is the one that is removed the list checks it again, but does not find it
+            if ipaddress.ip_network(i).subnet_of(ipaddress.ip_network(j)) and j != new_ip_converted[num]:
+                ip_converted[num] = 'delete'
+                prefix_length[num] = 'delete'  # Have to replace it to not remove out of position
+        except ValueError:
+            pass
+
     num += 1
+
+# Loop over and remove all the prefixes deleted in ip_converted
+while 'delete' in prefix_length:
+    prefix_length.remove('delete')
+
+while 'delete' in ip_converted:
+    ip_converted.remove('delete')
+
+ip_set = {}  # Dictionary for binpacking
+num1 = 0
+
+
+for i in prefix_length:
+    ip_set[ip_converted[num1]] = int(i)
+    num1 += 1
 
 groups = binpacking.to_constant_volume(ip_set, 4096)
 
 resourcesPerGroups = [list(group.keys()) for group in groups]
 
 # Numerate part starting from 1
-b = 1
+num3 = 1
 
 # Open the text file to write to
 file1 = open("ips.txt", "w")
 
 for i in resourcesPerGroups:
     excluded_ips = []
-
+    dont_write_ip = 0
     # Join IPs to exclude separated by comma
     ips_ex = ', '.join(i)
     ips_ex = ips_ex.split(", ")
 
-    L = "Part " + str(b) + ": " + ', '.join(i) + "\n"  # Convert to string
-
     # Loops over all included IPs to check if they match excluded IPs
-    for z in ips_ex:
-        for zz in ex_ip_converted:
-            if ipaddress.ip_interface(zz) in ipaddress.IPv4Network(z):
-                excluded_ips.append(zz)
+    for j in ips_ex:
+        for jj in ex_ip_converted:
+            if jj == j:  # If the exclude and include are the same don't write ether
+                dont_write_ip = 1
+            elif ipaddress.ip_interface(jj) in ipaddress.IPv4Network(j):
+                print(jj)
+                excluded_ips.append(jj)
 
-    file1.writelines(L)  # Write to file Part # and assets in it
+
+    # Skips writing if the exclude and include are the same
+    if dont_write_ip != 1:
+        L = "Part " + str(num3) + ": " + ', '.join(i) + "\n"  # Convert to string
+        file1.writelines(L)  # Write to file Part # and assets in it
 
     # Write to file assets to exclude
     if excluded_ips:
         L = "Exclude IP/s: " + ', '.join(excluded_ips) + '\n' + '\n'
         file1.writelines(L)
 
-    b += 1
+    num3 += 1
 file1.close()
