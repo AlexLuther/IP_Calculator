@@ -8,7 +8,7 @@ Takes input of addresses to exclude in the second box
 Features: 
 Breaks up CIDR over 4096 i.e. "/20" into hosts under 4096
 Converts incorrectly inputted IPs such as 10.0.0.0/32 to 10.0.0.0 and 10.0.0.20/20 into 10.0.0.0/20
-Will not include a duplicate address
+Will not include a duplicate address for "Included" IPs only.
 
 When you hit "Submit" button a text file will generate in the same location as the program with parts listed
 Excluded parts will be under the part to include e.g.
